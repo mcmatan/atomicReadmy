@@ -115,3 +115,38 @@ async function performWorkflowStep(stepName: string, idempotencyKey: guid, paylo
 }
 
 ```
+
+
+```mermaid
+
+sequenceDiagram
+    participant User as User
+    participant App as User Application
+    participant Atomic as Atomic Server
+
+    Note over User,App: User Start Workflow
+    User->>App: Start (calls Create user)
+    App->>Atomic: Post workflow UserCreationWorkflow /workflows/userCreation (Hanging)
+    Atomic->>App: invoke /workflows/userCreation response 200
+
+    Note over App,Atomic: User Creation Step
+    App->>Atomic: Post workflow step /workflows/userCreation/createUser
+    Atomic->>App: invoke /workflows/userCreation/createUser response 200
+
+    Note over App,Atomic: Email Sending Step
+    App->>Atomic: Post workflow step /workflows/userCreation/sendEmail
+    Atomic->>App: invoke /workflows/userCreation/sendEmail response 200
+
+    Note over App,Atomic: Analytics Sending Step
+    App->>Atomic: Post workflow step /workflows/userCreation/sentAnalytics
+    Atomic->>App: invoke /workflows/userCreation/sentAnalytics response 404
+
+    Note over Atomic,App: Retries for Analytics Sending Step
+    Atomic->>App: (retry 1) invoke /workflows/userCreation/sentAnalytics response 404
+    Atomic->>App: (retry 2) invoke /workflows/userCreation/sentAnalytics response 404
+    Atomic->>App: (retry 3) invoke /workflows/userCreation/sentAnalytics response 200
+
+    Note over App,Atomic: Completion of Workflow
+    App->>Atomic: Post workflow UserCreationWorkflow /workflows/userCreation (COMPLETED)
+
+```
