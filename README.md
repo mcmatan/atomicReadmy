@@ -1,3 +1,6 @@
+```typescript
+
+
 // Retry configuration used for workflow steps
 const retryConfig = { count: 10, backOff: 1000 };
 
@@ -68,3 +71,5 @@ async function postWorkflow(workflowName: string, stepInvokeUrl: string, idempot
 async function performWorkflowStep(stepName: string, idempotencyKey: guid, payload: any) {
     return await postWorkflow("createUser", `${workflowUrlBase}/${stepName}`, idempotencyKey, payload, {retry: retryConfig});
 }
+
+```
